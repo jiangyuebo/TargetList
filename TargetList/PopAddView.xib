@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12121" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="PopAddView">
+            <rect key="frame" x="0.0" y="0.0" width="370" height="249"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="ETr-4v-oZf">
+                    <rect key="frame" x="8" y="8" width="354" height="165"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                </textView>
+                <button opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eNP-rB-X1E">
+                    <rect key="frame" x="8" y="181" width="354" height="60"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="60" id="E7R-Cx-NKC"/>
+                    </constraints>
+                    <state key="normal" title="save"/>
+                </button>
+                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="whl-h8-js8">
+                    <rect key="frame" x="340" y="-20" width="50" height="50"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="50" id="lOV-fj-Rej"/>
+                        <constraint firstAttribute="height" constant="50" id="mrt-Qw-s7e"/>
+                    </constraints>
+                    <state key="normal" backgroundImage="cancel"/>
+                </button>
+            </subviews>
+            <color key="backgroundColor" red="0.97254901959999995" green="0.3921568627" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="whl-h8-js8" secondAttribute="trailing" constant="-20" id="3DS-U4-2gp"/>
+                <constraint firstAttribute="bottom" secondItem="eNP-rB-X1E" secondAttribute="bottom" constant="8" id="6r1-u3-pl4"/>
+                <constraint firstItem="ETr-4v-oZf" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="8" id="Jp5-fB-dUy"/>
+                <constraint firstItem="eNP-rB-X1E" firstAttribute="top" secondItem="ETr-4v-oZf" secondAttribute="bottom" constant="8" id="SJh-Dd-Y0n"/>
+                <constraint firstItem="eNP-rB-X1E" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="8" id="eqQ-iE-iPA"/>
+                <constraint firstItem="whl-h8-js8" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="-20" id="j19-Y0-UCD"/>
+                <constraint firstAttribute="trailing" secondItem="eNP-rB-X1E" secondAttribute="trailing" constant="8" id="jeJ-Zf-QJt"/>
+                <constraint firstItem="ETr-4v-oZf" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="unP-di-mA4"/>
+                <constraint firstAttribute="trailing" secondItem="ETr-4v-oZf" secondAttribute="trailing" constant="8" id="zgk-eG-OO5"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="btnConfirm" destination="eNP-rB-X1E" id="sED-R9-OSE"/>
+                <outlet property="tvContent" destination="ETr-4v-oZf" id="jlR-Et-Sv4"/>
+            </connections>
+            <point key="canvasLocation" x="32" y="-154.5"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="cancel" width="200" height="200"/>
+    </resources>
+</document>

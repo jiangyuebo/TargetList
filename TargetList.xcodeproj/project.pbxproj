@@ -7,15 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C439C8591F4D76BE00F03D55 /* JerryTools.m in Sources */ = {isa = PBXBuildFile; fileRef = C439C8581F4D76BE00F03D55 /* JerryTools.m */; };
+		C439C85D1F4FCC3200F03D55 /* UIColor+NSString.m in Sources */ = {isa = PBXBuildFile; fileRef = C439C85C1F4FCC3200F03D55 /* UIColor+NSString.m */; };
 		C47CA03C1F42DC910030BEC4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C47CA03B1F42DC910030BEC4 /* main.m */; };
 		C47CA03F1F42DC910030BEC4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C47CA03E1F42DC910030BEC4 /* AppDelegate.m */; };
 		C47CA0421F42DC910030BEC4 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C47CA0411F42DC910030BEC4 /* ViewController.m */; };
 		C47CA0451F42DC910030BEC4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C47CA0431F42DC910030BEC4 /* Main.storyboard */; };
 		C47CA0471F42DC910030BEC4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C47CA0461F42DC910030BEC4 /* Assets.xcassets */; };
 		C47CA04A1F42DC910030BEC4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C47CA0481F42DC910030BEC4 /* LaunchScreen.storyboard */; };
+		C4A5DB6D1F46D78E002C51F9 /* libsqlite3.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C4A5DB6C1F46D78E002C51F9 /* libsqlite3.0.tbd */; };
+		C4A5DB711F46EC2F002C51F9 /* RecordMode.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A5DB701F46EC2F002C51F9 /* RecordMode.m */; };
+		C4CACAE41F45A07D00DC37D4 /* PopAddView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4CACAE31F45A07D00DC37D4 /* PopAddView.xib */; };
+		C4CACAE81F45A16200DC37D4 /* PopAddView.m in Sources */ = {isa = PBXBuildFile; fileRef = C4CACAE71F45A16200DC37D4 /* PopAddView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C439C8571F4D76BE00F03D55 /* JerryTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JerryTools.h; sourceTree = "<group>"; };
+		C439C8581F4D76BE00F03D55 /* JerryTools.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JerryTools.m; sourceTree = "<group>"; };
+		C439C85B1F4FCC3200F03D55 /* UIColor+NSString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+NSString.h"; sourceTree = "<group>"; };
+		C439C85C1F4FCC3200F03D55 /* UIColor+NSString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+NSString.m"; sourceTree = "<group>"; };
 		C47CA0371F42DC910030BEC4 /* TargetList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TargetList.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C47CA03B1F42DC910030BEC4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C47CA03D1F42DC910030BEC4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -26,6 +36,13 @@
 		C47CA0461F42DC910030BEC4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C47CA0491F42DC910030BEC4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C47CA04B1F42DC910030BEC4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C4A5DB6A1F45A890002C51F9 /* global_header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = global_header.h; sourceTree = "<group>"; };
+		C4A5DB6C1F46D78E002C51F9 /* libsqlite3.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.0.tbd; path = usr/lib/libsqlite3.0.tbd; sourceTree = SDKROOT; };
+		C4A5DB6F1F46EC2F002C51F9 /* RecordMode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordMode.h; sourceTree = "<group>"; };
+		C4A5DB701F46EC2F002C51F9 /* RecordMode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RecordMode.m; sourceTree = "<group>"; };
+		C4CACAE31F45A07D00DC37D4 /* PopAddView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PopAddView.xib; sourceTree = "<group>"; };
+		C4CACAE61F45A16200DC37D4 /* PopAddView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopAddView.h; sourceTree = "<group>"; };
+		C4CACAE71F45A16200DC37D4 /* PopAddView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PopAddView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,17 +50,38 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C4A5DB6D1F46D78E002C51F9 /* libsqlite3.0.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C439C8561F4D763B00F03D55 /* 工具 */ = {
+			isa = PBXGroup;
+			children = (
+				C439C85A1F4FCC2400F03D55 /* color */,
+				C439C8571F4D76BE00F03D55 /* JerryTools.h */,
+				C439C8581F4D76BE00F03D55 /* JerryTools.m */,
+			);
+			name = "工具";
+			sourceTree = "<group>";
+		};
+		C439C85A1F4FCC2400F03D55 /* color */ = {
+			isa = PBXGroup;
+			children = (
+				C439C85B1F4FCC3200F03D55 /* UIColor+NSString.h */,
+				C439C85C1F4FCC3200F03D55 /* UIColor+NSString.m */,
+			);
+			name = color;
+			sourceTree = "<group>";
+		};
 		C47CA02E1F42DC910030BEC4 = {
 			isa = PBXGroup;
 			children = (
 				C47CA0391F42DC910030BEC4 /* TargetList */,
 				C47CA0381F42DC910030BEC4 /* Products */,
+				C4A5DB6B1F46D78D002C51F9 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,14 +96,16 @@
 		C47CA0391F42DC910030BEC4 /* TargetList */ = {
 			isa = PBXGroup;
 			children = (
+				C439C8561F4D763B00F03D55 /* 工具 */,
+				C4A5DB691F45A17A002C51F9 /* 首页 */,
+				C4CACAE51F45A13800DC37D4 /* 新增记录 */,
 				C47CA03D1F42DC910030BEC4 /* AppDelegate.h */,
 				C47CA03E1F42DC910030BEC4 /* AppDelegate.m */,
-				C47CA0401F42DC910030BEC4 /* ViewController.h */,
-				C47CA0411F42DC910030BEC4 /* ViewController.m */,
 				C47CA0431F42DC910030BEC4 /* Main.storyboard */,
 				C47CA0461F42DC910030BEC4 /* Assets.xcassets */,
 				C47CA0481F42DC910030BEC4 /* LaunchScreen.storyboard */,
 				C47CA04B1F42DC910030BEC4 /* Info.plist */,
+				C4A5DB6A1F45A890002C51F9 /* global_header.h */,
 				C47CA03A1F42DC910030BEC4 /* Supporting Files */,
 			);
 			path = TargetList;
@@ -77,6 +117,51 @@
 				C47CA03B1F42DC910030BEC4 /* main.m */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		C4A5DB691F45A17A002C51F9 /* 首页 */ = {
+			isa = PBXGroup;
+			children = (
+				C47CA0401F42DC910030BEC4 /* ViewController.h */,
+				C47CA0411F42DC910030BEC4 /* ViewController.m */,
+			);
+			name = "首页";
+			sourceTree = "<group>";
+		};
+		C4A5DB6B1F46D78D002C51F9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C4A5DB6C1F46D78E002C51F9 /* libsqlite3.0.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C4A5DB6E1F46EC08002C51F9 /* Mode */ = {
+			isa = PBXGroup;
+			children = (
+				C4A5DB6F1F46EC2F002C51F9 /* RecordMode.h */,
+				C4A5DB701F46EC2F002C51F9 /* RecordMode.m */,
+			);
+			name = Mode;
+			sourceTree = "<group>";
+		};
+		C4CACAE21F45A05900DC37D4 /* xib */ = {
+			isa = PBXGroup;
+			children = (
+				C4CACAE31F45A07D00DC37D4 /* PopAddView.xib */,
+			);
+			name = xib;
+			sourceTree = "<group>";
+		};
+		C4CACAE51F45A13800DC37D4 /* 新增记录 */ = {
+			isa = PBXGroup;
+			children = (
+				C4CACAE61F45A16200DC37D4 /* PopAddView.h */,
+				C4CACAE71F45A16200DC37D4 /* PopAddView.m */,
+				C4A5DB6E1F46EC08002C51F9 /* Mode */,
+				C4CACAE21F45A05900DC37D4 /* xib */,
+			);
+			name = "新增记录";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,6 +225,7 @@
 			files = (
 				C47CA04A1F42DC910030BEC4 /* LaunchScreen.storyboard in Resources */,
 				C47CA0471F42DC910030BEC4 /* Assets.xcassets in Resources */,
+				C4CACAE41F45A07D00DC37D4 /* PopAddView.xib in Resources */,
 				C47CA0451F42DC910030BEC4 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -151,8 +237,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C439C8591F4D76BE00F03D55 /* JerryTools.m in Sources */,
+				C439C85D1F4FCC3200F03D55 /* UIColor+NSString.m in Sources */,
 				C47CA0421F42DC910030BEC4 /* ViewController.m in Sources */,
 				C47CA03F1F42DC910030BEC4 /* AppDelegate.m in Sources */,
+				C4CACAE81F45A16200DC37D4 /* PopAddView.m in Sources */,
+				C4A5DB711F46EC2F002C51F9 /* RecordMode.m in Sources */,
 				C47CA03C1F42DC910030BEC4 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -314,6 +404,7 @@
 				C47CA0501F42DC910030BEC4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
