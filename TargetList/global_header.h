@@ -28,6 +28,8 @@
 #define TABLE_RECORD_COL_CONTENT @"content"
 //图片
 #define TABLE_RECORD_COL_PIC @"pic"
+//类型
+#define TABLE_RECORD_COL_TYPE @"type"
 //冗余字段
 #define TABLE_RECORD_COL_TEMP1 @"temp1"
 #define TABLE_RECORD_COL_TEMP2 @"temp2"

@@ -25,6 +25,9 @@ static sqlite3 *db;
 
 @interface ViewController ()<UITableViewDelegate,UITableViewDataSource>
 
+@property (strong, nonatomic) IBOutlet UITextField *searchText;
+
+
 @property (strong, nonatomic) IBOutlet UITableView *ListTable;
 
 //添加记录按钮
@@ -57,6 +60,30 @@ static sqlite3 *db;
         self.ListTable.editing = NO;
     }else{
         self.ListTable.editing = YES;
+    }
+}
+
+#pragma mark - 搜索开关
+- (IBAction)searchAction:(UIButton *)sender {
+    if (self.searchText.isHidden) {
+        self.searchText.alpha = 0.0f;
+        [self.searchText setHidden:NO];
+        //显示
+        [UIView animateWithDuration:0.5 animations:^{
+            self.searchText.alpha = 1.0f;
+        } completion:^(BOOL finished) {
+            
+        }];
+    }else{
+        //隐藏
+        [UIView animateWithDuration:0.5 animations:^{
+            self.searchText.alpha = 0.0f;
+        } completion:^(BOOL finished) {
+            //收起键盘
+            [self.searchText resignFirstResponder];
+            //隐藏搜索框
+            [self.searchText setHidden:YES];
+        }];
     }
 }
 
@@ -121,14 +148,18 @@ static sqlite3 *db;
     self.navigationController.navigationBarHidden = YES;
     
     //test data
-    self.listData = [[NSMutableArray alloc] initWithObjects:@"猪八戒", @"牛魔王", @"蜘蛛精", @"白骨精", @"狐狸精",nil];
+//    self.listData = [[NSMutableArray alloc] initWithObjects:@"猪八戒", @"牛魔王", @"蜘蛛精", @"白骨精", @"狐狸精",nil];
+    self.listData = [[NSMutableArray alloc] init];
     //表单设置
     self.ListTable.delegate = self;
     self.ListTable.dataSource = self;
-    //设置表单背景
-    UIImageView *tableBackImage = [[UIImageView alloc] initWithFrame:self.ListTable.bounds];
-    [tableBackImage setImage:[UIImage imageNamed:@"list_bg"]];
-    self.ListTable.backgroundView = tableBackImage;
+    
+    //判断是否有数据
+    if ([self.listData count] == 0) {
+        //无数据,隐藏列表，显示无数据图片
+        self.ListTable.hidden = YES;
+        
+    }
     
     //创建按钮文字位移
     self.btnAddRecord.contentEdgeInsets = UIEdgeInsetsMake(0, 0, 8, 0);
@@ -216,8 +247,6 @@ static sqlite3 *db;
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     return 64;
 }
-
-
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     
@@ -318,7 +347,7 @@ static sqlite3 *db;
 //创建表
 - (void)createTable{
     //1.准备sqlite语句
-    NSString *sqlite = [NSString stringWithFormat:@"create table if not exists '%@' ('%@' integer primary key autoincrement not null,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text)",TABLE_RECORD_NAME,TABLE_RECORD_COL_ID,TABLE_RECORD_COL_DATE,TABLE_RECORD_COL_CONTENT,TABLE_RECORD_COL_PIC,TABLE_RECORD_COL_TEMP1,TABLE_RECORD_COL_TEMP2,TABLE_RECORD_COL_TEMP3];
+    NSString *sqlite = [NSString stringWithFormat:@"create table if not exists '%@' ('%@' integer primary key autoincrement not null,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text)",TABLE_RECORD_NAME,TABLE_RECORD_COL_ID,TABLE_RECORD_COL_DATE,TABLE_RECORD_COL_CONTENT,TABLE_RECORD_COL_PIC,TABLE_RECORD_COL_TYPE,TABLE_RECORD_COL_TEMP1,TABLE_RECORD_COL_TEMP2,TABLE_RECORD_COL_TEMP3];
     
     //2.执行sqlite语句
     char *error = NULL;//执行sqlite语句失败的时候,会把失败的原因存储到里面
