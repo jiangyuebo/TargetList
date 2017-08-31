@@ -64,8 +64,8 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Beg-JL-Goo">
-                                                    <rect key="frame" x="16" y="0.0" width="303" height="44"/>
-                                                    <fontDescription key="fontDescription" name="PingFangHK-Light" family="PingFang HK" pointSize="16"/>
+                                                    <rect key="frame" x="51" y="0.0" width="268" height="44"/>
+                                                    <fontDescription key="fontDescription" name="PingFangHK-Light" family="PingFang HK" pointSize="18"/>
                                                     <color key="textColor" red="0.39215686274509803" green="0.39215686274509803" blue="0.39215686274509803" alpha="1" colorSpace="calibratedRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
@@ -76,6 +76,13 @@
                                                         <constraint firstAttribute="height" constant="1" id="R7e-NG-PMo"/>
                                                     </constraints>
                                                 </view>
+                                                <imageView userInteractionEnabled="NO" tag="2" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Vnf-fs-bKb">
+                                                    <rect key="frame" x="8" y="2" width="40" height="40"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="40" id="5sF-qB-Hty"/>
+                                                        <constraint firstAttribute="height" constant="40" id="dGG-1M-5RY"/>
+                                                    </constraints>
+                                                </imageView>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="o7r-FU-CRc" firstAttribute="leading" secondItem="9El-nK-cV2" secondAttribute="leading" id="26e-wH-Gc0"/>
@@ -83,7 +90,9 @@
                                                 <constraint firstAttribute="trailing" secondItem="o7r-FU-CRc" secondAttribute="trailing" id="Qfp-MY-7kD"/>
                                                 <constraint firstItem="Beg-JL-Goo" firstAttribute="top" secondItem="9El-nK-cV2" secondAttribute="top" id="W8a-mP-4zw"/>
                                                 <constraint firstAttribute="bottom" secondItem="Beg-JL-Goo" secondAttribute="bottom" id="Zei-Ah-Xc8"/>
-                                                <constraint firstItem="Beg-JL-Goo" firstAttribute="leading" secondItem="9El-nK-cV2" secondAttribute="leading" constant="16" id="hhF-Th-EAm"/>
+                                                <constraint firstItem="Vnf-fs-bKb" firstAttribute="leading" secondItem="9El-nK-cV2" secondAttribute="leading" constant="8" id="dBp-Ly-PzP"/>
+                                                <constraint firstItem="Vnf-fs-bKb" firstAttribute="centerY" secondItem="Beg-JL-Goo" secondAttribute="centerY" id="i5w-jC-7Qz"/>
+                                                <constraint firstItem="Beg-JL-Goo" firstAttribute="leading" secondItem="Vnf-fs-bKb" secondAttribute="trailing" constant="3" id="uVE-Do-dth"/>
                                                 <constraint firstAttribute="bottom" secondItem="o7r-FU-CRc" secondAttribute="bottom" id="vdF-oM-67l"/>
                                             </constraints>
                                         </tableViewCellContentView>
@@ -152,6 +161,9 @@
                                     <constraint firstAttribute="width" constant="70" id="ydM-It-vf4"/>
                                 </constraints>
                                 <state key="normal" backgroundImage="btn_new"/>
+                                <connections>
+                                    <action selector="addNewRecord:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Wsh-Nr-Mar"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -192,6 +204,7 @@
                     <connections>
                         <outlet property="ListTable" destination="dON-Ld-B6u" id="Abm-kf-ClW"/>
                         <outlet property="btnAddRecord" destination="wHT-Ck-tJV" id="kgX-AA-pqX"/>
+                        <outlet property="emptyShowView" destination="N48-22-CrY" id="CQE-Ng-dVT"/>
                         <outlet property="searchText" destination="2Tv-nw-S5i" id="EgX-aM-K7E"/>
                     </connections>
                 </viewController>

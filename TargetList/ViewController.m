@@ -7,12 +7,12 @@
 //
 
 #import "ViewController.h"
-#import "PopAddView.h"
 #import "global_header.h"
 #import <sqlite3.h>
 
 #import "RecordMode.h"
 #import "JerryTools.h"
+#import "JerryViewTools.h"
 #import "UIColor+NSString.h"
 
 typedef NS_ENUM(NSUInteger,PopViewOperation){
@@ -30,6 +30,9 @@ static sqlite3 *db;
 
 @property (strong, nonatomic) IBOutlet UITableView *ListTable;
 
+//无数据显示view
+@property (strong, nonatomic) IBOutlet UIView *emptyShowView;
+
 //添加记录按钮
 @property (strong, nonatomic) IBOutlet UIButton *btnAddRecord;
 
@@ -37,7 +40,31 @@ static sqlite3 *db;
 @property (strong,nonatomic) NSMutableArray *listData;
 
 //新增界面
-@property (strong,nonatomic) PopAddView *popAddView;
+@property (strong,nonatomic) UIView *popAddView;
+//新增界面-类型显示
+@property (strong,nonatomic) UILabel *recordTypeLabel;
+//新增界面-输入框
+@property (strong,nonatomic) UITextField *recordField;
+//新增界面-类型选择
+@property (strong,nonatomic) UIScrollView *recordTypeSelectScrollView;
+//新增界面-类型名称
+@property (strong,nonatomic) NSMutableArray *typeNameArray;
+//新增界面-类型代码
+@property (strong,nonatomic) NSMutableArray *typeCodeArray;
+//新增假面-类型图片
+@property (strong,nonatomic) NSMutableArray *iconImageArray;
+//新增界面-对象
+@property (strong,nonatomic) RecordMode *recordMode;
+//新增界面-发送按钮
+@property (strong,nonatomic) UIButton *recordSendButton;
+//类型选择暂存，记录上次用户选择的类型
+@property (strong,nonatomic) NSString *selectedTypeTemp;
+
+//唤起键盘临时输入框
+@property (strong,nonatomic) UITextField *tempField;
+//输入遮罩
+@property (strong,nonatomic) UIView *maskView;
+
 @property (nonatomic) CGFloat popViewWidth;
 @property (nonatomic) CGFloat popViewHeight;
 @property (nonatomic) CGFloat popViewX;
@@ -72,7 +99,7 @@ static sqlite3 *db;
         [UIView animateWithDuration:0.5 animations:^{
             self.searchText.alpha = 1.0f;
         } completion:^(BOOL finished) {
-            
+            [self.searchText becomeFirstResponder];
         }];
     }else{
         //隐藏
@@ -92,47 +119,63 @@ static sqlite3 *db;
     //操作状态设置为新增
     self.operationStatus = createRecord;
     
-    if (self.addNewRecordIsShow) {
-        //降下
-        [self addNewViewDown];
-        self.addNewRecordIsShow = NO;
-    }else{
-        //升起
-        [self addNewViewUp];
-        self.addNewRecordIsShow = YES;
-    }
+    //准备记录对象
+    self.recordMode = [[RecordMode alloc] init];
+    [self.recordMode setType:record_type_code_read];
+    
+    //设置类型显示
+    NSUInteger codeIndex = [self.typeCodeArray indexOfObject:record_type_code_read];
+    NSString *typeName = [self.typeNameArray objectAtIndex:codeIndex];
+    self.recordTypeLabel.text = [NSString stringWithFormat:@"#%@#",typeName];
+    
+    self.recordField.text = @"";
+    
+    [self showMaskView];
+    
+    [self.tempField becomeFirstResponder];
 }
 
-#pragma mark - 新增界面升起
-- (void)addNewViewUp{
-    [UIView animateWithDuration:anim_popview_last animations:^{
-        //pop view 升起
-        CGAffineTransform tf = CGAffineTransformMakeTranslation(0,-(SCREENHEIGHT - popview_top_margin));
-        [self.popAddView setTransform:tf];
-    }];
+#pragma mark - 显示遮罩层
+- (void)showMaskView{
+    //添加遮罩层
+    self.maskView = [[UIView alloc] initWithFrame:CGRectMake(0, 0,SCREENWIDTH,SCREENHEIGHT)];
+    self.maskView.backgroundColor = [UIColor blackColor];
+    self.maskView.alpha = 0.0f;
+    self.maskView.userInteractionEnabled = YES;
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchMask)];
+    [self.maskView addGestureRecognizer:tapGestureRecognizer];
     
-//    [UIView animateWithDuration:anim_popview_last animations:^{
-//        //add button 旋转
-//        self.btnAddRecord.transform = CGAffineTransformMakeRotation(-M_PI/4);
-//    }];
+    [self.view addSubview:self.maskView];
+    
+    [UIView animateWithDuration:0.5 animations:^{
+        self.maskView.alpha = 0.5f;
+    } completion:^(BOOL finished) {
+        
+    }];
 }
 
-#pragma mark - 新增界面落下
-- (void)addNewViewDown{
-    [UIView animateWithDuration:anim_popview_last animations:^{
-        //pop view 降下
-        CGAffineTransform tf = CGAffineTransformMakeTranslation(0,0);
-        [self.popAddView setTransform:tf];
+#pragma mark - 隐藏遮罩层
+- (void)hideMaskView{
+    [UIView animateWithDuration:0.5 animations:^{
+        self.maskView.alpha = 0.0f;
+    } completion:^(BOOL finished) {
+        [self.maskView removeFromSuperview];
     }];
-    
-//    [UIView animateWithDuration:anim_popview_last animations:^{
-//        //add button 旋转
-//        self.btnAddRecord.transform = CGAffineTransformMakeRotation(M_PI/2);
-//    }];
+}
+
+#pragma mark - 点击遮罩
+- (void)touchMask{
+    [self.recordField resignFirstResponder];
+    //取消新增状态
+    self.operationStatus = 0;
+    [self hideMaskView];
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    //监听键盘弹出
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow) name:UIKeyboardWillShowNotification object:nil];
     
     [self initData];
     
@@ -140,65 +183,154 @@ static sqlite3 *db;
 }
 
 - (void)initData{
-    [self openSqlite];
+    if ([self openSqlite]) {
+        self.listData = [self quaryAllRecord];
+    }
 }
 
 - (void)initView{
+    //修改textField光标颜色
+    [[UITextField appearance] setTintColor:[UIColor colorWithString:@"#ABB2BC"]];
     
     self.navigationController.navigationBarHidden = YES;
+    //初始化新增界面
+    [self initAddRecordView];
     
-    //test data
-//    self.listData = [[NSMutableArray alloc] initWithObjects:@"猪八戒", @"牛魔王", @"蜘蛛精", @"白骨精", @"狐狸精",nil];
-    self.listData = [[NSMutableArray alloc] init];
     //表单设置
     self.ListTable.delegate = self;
     self.ListTable.dataSource = self;
     
-    //判断是否有数据
-    if ([self.listData count] == 0) {
-        //无数据,隐藏列表，显示无数据图片
-        self.ListTable.hidden = YES;
-        
-    }
-    
-    //创建按钮文字位移
-    self.btnAddRecord.contentEdgeInsets = UIEdgeInsetsMake(0, 0, 8, 0);
-    
-//    //设置新增记录界面
-//    self.popAddView = [[PopAddView alloc] init];
-//    //初始化界面宽高位置参数
-//    self.popViewWidth = SCREENWIDTH * 0.8;
-//    self.popViewHeight = SCREENHEIGHT * 0.25;
-//    self.popViewX = (SCREENWIDTH - self.popViewWidth)/2;
-//    self.popViewY = (SCREENHEIGHT - self.popViewHeight)/2;
-//    
-//    self.popAddView.frame = CGRectMake(self.popViewX, SCREENHEIGHT - 20, self.popViewWidth, self.popViewHeight);
-//    
-//    self.addNewRecordIsShow = NO;
-//    
-//    //加入主界面
-//    [self.view addSubview:self.popAddView];
-//    
-//    [self.view bringSubviewToFront:self.btnAddRecord];
-//    
-//    //popview 中的confirm按钮
-//    UIButton *btnConfirm = [self.popAddView viewWithTag:1];
-//    [btnConfirm addTarget:self action:@selector(popviewConfirmClicked) forControlEvents:UIControlEventTouchUpInside];
-//    //popview 中的cancel按钮
-//    UIButton *btnCancel = [self.popAddView viewWithTag:2];
-//    [btnCancel addTarget:self action:@selector(popviewCancelClicked) forControlEvents:UIControlEventTouchUpInside];
-//    //popview 中的输入框
-//    self.tvPopContent = [self.popAddView viewWithTag:3];
+    [self isShowEmptyView];
 }
 
-#pragma mark - 点击pop界面的confirm按钮
-- (void)popviewConfirmClicked{
+#pragma mark - 判断是否显示空数据展示页
+- (void)isShowEmptyView{
+    //判断是否有数据
+    if ([self.listData count] > 0) {
+        //有数据，显示列表，隐藏无数据view
+        self.ListTable.hidden = NO;
+        self.emptyShowView.hidden = YES;
+    }else{
+        //无数据,隐藏列表，显示无数据view
+        self.ListTable.hidden = YES;
+        self.emptyShowView.hidden = NO;
+    }
+}
+
+#pragma mark - 初始化新增记录界面
+- (void)initAddRecordView{
+    //新增界面
+    self.popAddView = [JerryViewTools getViewByXibName:@"PopAddView"];
+    //类型显示字符
+    self.recordTypeLabel = [self.popAddView viewWithTag:1];
+    //输入框
+    self.recordField = [self.popAddView viewWithTag:2];
+    //类型选择
+    self.recordTypeSelectScrollView = [self.popAddView viewWithTag:3];
+    //类型名称
+    self.typeNameArray = [NSMutableArray array];
+    //发送按钮
+    self.recordSendButton = [self.popAddView viewWithTag:4];
+    //添加存储事件
+    [self.recordSendButton addTarget:self action:@selector(saveRecord) forControlEvents:UIControlEventTouchUpInside];
+    
+    //用来升起键盘的field
+    self.tempField = [[UITextField alloc] initWithFrame:CGRectMake(0, SCREENHEIGHT,10, 10)];
+    [self.view addSubview:self.tempField];
+    //存储类型图片
+    self.iconImageArray = [NSMutableArray array];
+    //类型代码
+    self.typeCodeArray = [NSMutableArray array];
+    
+    //记录分类图标
+    UIImage *iconImageFit = [UIImage imageNamed:@"edit_icon_fit"];
+    [self.typeNameArray addObject:record_type_name_fit];
+    [self.typeCodeArray addObject:record_type_code_fit];
+    [self.iconImageArray addObject:iconImageFit];
+    
+    
+    UIImage *iconImageFood = [UIImage imageNamed:@"edit_icon_food"];
+    [self.typeNameArray addObject:record_type_name_food];
+    [self.typeCodeArray addObject:record_type_code_food];
+    [self.iconImageArray addObject:iconImageFood];
+    
+    UIImage *iconImageHandwork = [UIImage imageNamed:@"edit_icon_handwork"];
+    [self.typeNameArray addObject:record_type_name_handwork];
+    [self.typeCodeArray addObject:record_type_code_handwork];
+    [self.iconImageArray addObject:iconImageHandwork];
+    
+    UIImage *iconImageJourney = [UIImage imageNamed:@"edit_icon_journey"];
+    [self.typeNameArray addObject:record_type_name_journey];
+    [self.typeCodeArray addObject:record_type_code_journey];
+    [self.iconImageArray addObject:iconImageJourney];
+    
+    UIImage *iconImageKit = [UIImage imageNamed:@"edit_icon_kid"];
+    [self.typeNameArray addObject:record_type_name_kid];
+    [self.typeCodeArray addObject:record_type_code_kid];
+    [self.iconImageArray addObject:iconImageKit];
+    
+    UIImage *iconImageMovie = [UIImage imageNamed:@"edit_icon_movie"];
+    [self.typeNameArray addObject:record_type_name_movie];
+    [self.typeCodeArray addObject:record_type_code_movie];
+    [self.iconImageArray addObject:iconImageMovie];
+    
+    UIImage *iconImageRead = [UIImage imageNamed:@"edit_icon_read"];
+    [self.typeNameArray addObject:record_type_name_read];
+    [self.typeCodeArray addObject:record_type_code_read];
+    [self.iconImageArray addObject:iconImageRead];
+    
+    UIImage *iconImageStudy = [UIImage imageNamed:@"edit_icon_study"];
+    [self.typeNameArray addObject:record_type_name_study];
+    [self.typeCodeArray addObject:record_type_code_study];
+    [self.iconImageArray addObject:iconImageStudy];
+    
+    UIImage *iconImagePet = [UIImage imageNamed:@"edit_icon_pet"];
+    [self.typeNameArray addObject:record_type_name_pet];
+    [self.typeCodeArray addObject:record_type_code_pet];
+    [self.iconImageArray addObject:iconImagePet];
+    
+    UIImage *iconImageOther = [UIImage imageNamed:@"edit_icon_other"];
+    [self.typeNameArray addObject:record_type_name_other];
+    [self.typeCodeArray addObject:record_type_code_other];
+    [self.iconImageArray addObject:iconImageOther];
+    
+    self.recordTypeSelectScrollView.contentSize = CGSizeMake([self.iconImageArray count] * 40, 42);
+    
+    for (int i = 0; i < [self.iconImageArray count]; i++) {
+        UIImage *iconImage = [self.iconImageArray objectAtIndex:i];
+        UIImageView *iconImageView = [[UIImageView alloc] initWithImage:iconImage];
+        iconImageView.frame = CGRectMake(i * 40, 0, 40, 42);
+        
+        iconImageView.tag = i;
+        UITapGestureRecognizer *selectTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(selectTypeImage:)];
+        iconImageView.userInteractionEnabled = YES;
+        [iconImageView addGestureRecognizer:selectTapGestureRecognizer];
+        
+        [self.recordTypeSelectScrollView addSubview:iconImageView];
+    }
+}
+
+#pragma mark - 记录类型选择点击
+- (void)selectTypeImage:(UITapGestureRecognizer *) recognizer{
+    NSUInteger selectedIndex = recognizer.view.tag;
+    //设置选择类型显示
+    self.recordTypeLabel.text = [NSString stringWithFormat:@"#%@#",[self.typeNameArray objectAtIndex:selectedIndex]];
+    //设置选择类型code
+    [self.recordMode setType:[self.typeCodeArray objectAtIndex:selectedIndex]];
+}
+
+#pragma mark - 存储记录
+- (void)saveRecord{
     //判断当前操作模式
     if (self.operationStatus == createRecord) {
         //创建
          //准备存储对象
         RecordMode *record = [self packageRecordMode];
-        [self addRecord:record];
+        if (record) {
+            if ([self addRecord:record]) {
+                [self afterSaveRecord];
+            }
+        }
     }else if (self.operationStatus == updateRecord){
         //更新
         
@@ -206,15 +338,33 @@ static sqlite3 *db;
     
 }
 
-#pragma mark - 点击pop界面cancel按钮
-- (void)popviewCancelClicked{
-    NSLog(@"CancelClicked ...");
+#pragma mark - 存储完成动作
+- (void)afterSaveRecord{
+    //取消新增状态
+    [self touchMask];
+    
+    //刷新表单
+    self.listData = [self quaryAllRecord];
+    [self.ListTable reloadData];
+}
+
+- (UIView *)inputAccessoryView{
+    
+    if (self.operationStatus == createRecord) {
+        return self.popAddView;
+    }else{
+        return nil;
+    }
+}
+
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
+    [self.view endEditing:YES];
 }
 
 #pragma mark - 组织存储对象
 - (RecordMode *)packageRecordMode{
     //输入内容
-    NSString *content = self.tvPopContent.text;
+    NSString *content = self.recordField.text;
     if ([JerryTools stringIsNull:content]) {
         //内容为空
         NSLog(@"内容为空");
@@ -222,21 +372,24 @@ static sqlite3 *db;
     }else{
         //内容不为空
         //文字内容
-        RecordMode *recordMode = [[RecordMode alloc] init];
-        [recordMode setContent:content];
+        [self.recordMode setContent:content];
         //时间
         long long timeStamp = [JerryTools getCurrentTimestamp];
         NSNumber *longlongNumber = [NSNumber numberWithLongLong:timeStamp];
         NSString *timeStampStr = [longlongNumber stringValue];
-        [recordMode setTimeStamp:timeStampStr];
+        [self.recordMode setTimeStamp:timeStampStr];
         
-        return recordMode;
+        return self.recordMode;
     }
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)keyboardWillShow{
+    [self.recordField becomeFirstResponder];
 }
 
 #pragma mark - TableView Delegate
@@ -251,10 +404,17 @@ static sqlite3 *db;
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     
     UITableViewCell *recordCell = [tableView dequeueReusableCellWithIdentifier:@"record"];
-        
-    NSUInteger rowNumber = [indexPath row];
+    
     UILabel *contentLabel = (UILabel *)[recordCell viewWithTag:1];
-    contentLabel.text = [self.listData objectAtIndex:rowNumber];
+    UIImageView *typeImageView = (UIImageView *)[recordCell viewWithTag:2];
+    
+    RecordMode *record = [self.listData objectAtIndex:indexPath.row];
+    //内容
+    [contentLabel setText:record.content];
+    //类型
+    NSUInteger iconIndex = [record.type integerValue];
+    UIImage *typeImage = [self.iconImageArray objectAtIndex:iconIndex];
+    [typeImageView setImage:typeImage];
 
     //显示拖动按钮
     recordCell.showsReorderControl = YES;
@@ -322,11 +482,11 @@ static sqlite3 *db;
 
 #pragma mark - 数据库
 //打开数据库
-- (void)openSqlite{
+- (BOOL)openSqlite{
     //判断数据库是否为空,如果不为空说明已经打开
     if (db != nil) {
         NSLog(@"数据库已打开");
-        return;
+        return YES;
     }
     
     //获取文件路径
@@ -338,42 +498,46 @@ static sqlite3 *db;
     //判断
     if (result == SQLITE_OK) {
         NSLog(@"数据库打开成功");
-        [self createTable];
+        return [self createTable];
     } else {
         NSLog(@"数据库打开失败");
+        return NO;
     }
 }
 
 //创建表
-- (void)createTable{
+- (BOOL)createTable{
     //1.准备sqlite语句
-    NSString *sqlite = [NSString stringWithFormat:@"create table if not exists '%@' ('%@' integer primary key autoincrement not null,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text)",TABLE_RECORD_NAME,TABLE_RECORD_COL_ID,TABLE_RECORD_COL_DATE,TABLE_RECORD_COL_CONTENT,TABLE_RECORD_COL_PIC,TABLE_RECORD_COL_TYPE,TABLE_RECORD_COL_TEMP1,TABLE_RECORD_COL_TEMP2,TABLE_RECORD_COL_TEMP3];
+    NSString *sqlite = [NSString stringWithFormat:@"create table if not exists '%@' ('%@' integer primary key autoincrement not null,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text)",TABLE_RECORD_NAME,TABLE_RECORD_COL_ID,TABLE_RECORD_COL_DATE,TABLE_RECORD_COL_CONTENT,TABLE_RECORD_COL_TYPE,TABLE_RECORD_COL_PIC,TABLE_RECORD_COL_TEMP1,TABLE_RECORD_COL_TEMP2,TABLE_RECORD_COL_TEMP3];
     
     //2.执行sqlite语句
     char *error = NULL;//执行sqlite语句失败的时候,会把失败的原因存储到里面
     int result = sqlite3_exec(db, [sqlite UTF8String], nil, nil, &error);
     if (result == SQLITE_OK) {
         NSLog(@"表创建成功");
-        //读取数据
-        [self quaryAllRecord];
+        return YES;
     } else {
         NSLog(@"表创建失败");
+        NSLog(@"error : %s",error);
+        return NO;
     }
 }
 
 //插入数据
-- (void)addRecord:(RecordMode *) record{
+- (BOOL)addRecord:(RecordMode *) record{
     //1.准备sqlite语句
-    NSString *sqlite = [NSString stringWithFormat:@"insert into %@ (%@,%@,%@,%@,%@,%@,%@) values (%@,'%@','%@','%@','%@','%@','%@')",TABLE_RECORD_NAME,TABLE_RECORD_COL_ID,TABLE_RECORD_COL_DATE,TABLE_RECORD_COL_CONTENT,TABLE_RECORD_COL_PIC,TABLE_RECORD_COL_TEMP1,TABLE_RECORD_COL_TEMP2,TABLE_RECORD_COL_TEMP3,nil,record.timeStamp,record.content,record.pic,record.temp1,record.temp2,record.temp3];
+    NSString *sqlite = [NSString stringWithFormat:@"insert into %@ (%@,%@,%@,%@,%@,%@,%@,%@) values (%@,'%@','%@','%@','%@','%@','%@','%@')",TABLE_RECORD_NAME,TABLE_RECORD_COL_ID,TABLE_RECORD_COL_DATE,TABLE_RECORD_COL_CONTENT,TABLE_RECORD_COL_TYPE,TABLE_RECORD_COL_PIC,TABLE_RECORD_COL_TEMP1,TABLE_RECORD_COL_TEMP2,TABLE_RECORD_COL_TEMP3,nil,record.timeStamp,record.content,record.type,record.pic,record.temp1,record.temp2,record.temp3];
     
     //2.执行sqlite语句
     char *error = NULL;//执行sqlite语句失败的时候,会把失败的原因存储到里面
     int result = sqlite3_exec(db, [sqlite UTF8String], nil, nil, &error);
     if (result == SQLITE_OK) {
         NSLog(@"添加数据成功");
+        return YES;
     } else {
         NSLog(@"添加数据失败");
         NSLog(@"错误：%s",error);
+        return NO;
     }
 }
 
@@ -414,7 +578,17 @@ static sqlite3 *db;
             NSString *date = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(stmt, 1)] ;
             //从伴随指针获取数据,第2列
             NSString *content = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(stmt, 2)] ;
-            NSLog(@"recordId:%@,date:%@,content:%@",recordId,date,content);
+            NSString *type = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(stmt, 3)] ;
+            NSLog(@"recordId:%@,date:%@,content:%@,type:%@",recordId,date,content,type);
+            
+            //封装记录对象
+            RecordMode *recordMode = [[RecordMode alloc] init];
+            [recordMode setRecordId:recordId];
+            [recordMode setTimeStamp:date];
+            [recordMode setContent:content];
+            [recordMode setType:type];
+            
+            [array addObject:recordMode];
         }
     } else {
         NSLog(@"查询失败");

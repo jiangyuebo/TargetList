@@ -11,12 +11,14 @@
 @interface RecordMode : NSObject
 
 //id 取表自增默认ID字段
-@property (nonatomic) NSUInteger recordId;
+@property (strong,nonatomic) NSString *recordId;
 
 //日期
 @property (strong,nonatomic) NSString *timeStamp;
 //内容
 @property (strong,nonatomic) NSString *content;
+//类型
+@property (strong,nonatomic) NSString *type;
 //图片
 @property (strong,nonatomic) NSString *pic;
 //temp1
