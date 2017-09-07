@@ -33,6 +33,9 @@ static sqlite3 *db;
 //无数据显示view
 @property (strong, nonatomic) IBOutlet UIView *emptyShowView;
 
+//无数据显示view
+@property (strong, nonatomic) IBOutlet UILabel *emptyShowLabel;
+
 //添加记录按钮
 @property (strong, nonatomic) IBOutlet UIButton *btnAddRecord;
 
@@ -214,6 +217,10 @@ static sqlite3 *db;
     //表单设置
     self.ListTable.delegate = self;
     self.ListTable.dataSource = self;
+    
+    //本地化无内容显示文字
+    NSString *localEmptyLabel = NSLocalizedString(@"emptyLabel", nil);
+    self.emptyShowLabel.text = localEmptyLabel;
     
     [self isShowEmptyView];
 }
@@ -456,6 +463,8 @@ static sqlite3 *db;
         [self.listData removeObjectAtIndex:indexPath.row];
         //刷新UI
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationLeft];
+        
+        [self isShowEmptyView];
     }
 }
 

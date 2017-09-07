@@ -204,6 +204,7 @@
                     <connections>
                         <outlet property="ListTable" destination="dON-Ld-B6u" id="Abm-kf-ClW"/>
                         <outlet property="btnAddRecord" destination="wHT-Ck-tJV" id="kgX-AA-pqX"/>
+                        <outlet property="emptyShowLabel" destination="sW6-aD-rf9" id="rES-yk-1ai"/>
                         <outlet property="emptyShowView" destination="N48-22-CrY" id="CQE-Ng-dVT"/>
                         <outlet property="searchText" destination="2Tv-nw-S5i" id="EgX-aM-K7E"/>
                     </connections>
