@@ -123,12 +123,22 @@ static sqlite3 *db;
     self.recordMode = [[RecordMode alloc] init];
     [self.recordMode setType:record_type_code_read];
     
+    [self showEditInterface:self.recordMode];
+    
+}
+
+#pragma mark - 展现输入界面
+- (void)showEditInterface:(RecordMode *) recordMode{
     //设置类型显示
-    NSUInteger codeIndex = [self.typeCodeArray indexOfObject:record_type_code_read];
+    NSUInteger codeIndex = [self.typeCodeArray indexOfObject:recordMode.type];
     NSString *typeName = [self.typeNameArray objectAtIndex:codeIndex];
     self.recordTypeLabel.text = [NSString stringWithFormat:@"#%@#",typeName];
     
-    self.recordField.text = @"";
+    if (recordMode.content) {
+        self.recordField.text = recordMode.content;
+    }else{
+        self.recordField.text = @"";
+    }
     
     [self showMaskView];
     
@@ -185,6 +195,11 @@ static sqlite3 *db;
 - (void)initData{
     if ([self openSqlite]) {
         self.listData = [self quaryAllRecord];
+        
+        for (int i = 0; i < [self.listData count]; i++) {
+            RecordMode *record = [self.listData objectAtIndex:i];
+            NSLog(@"record:%@",record.content);
+        }
     }
 }
 
@@ -321,21 +336,26 @@ static sqlite3 *db;
 
 #pragma mark - 存储记录
 - (void)saveRecord{
-    //判断当前操作模式
-    if (self.operationStatus == createRecord) {
-        //创建
-         //准备存储对象
-        RecordMode *record = [self packageRecordMode];
-        if (record) {
+    //准备存储对象
+    RecordMode *record = [self packageRecordMode];
+    if (record) {
+        //判断当前操作模式
+        if (self.operationStatus == createRecord) {
+            //创建
+            NSLog(@"创建新记录");
             if ([self addRecord:record]) {
                 [self afterSaveRecord];
             }
+        }else if (self.operationStatus == updateRecord){
+            //更新
+            NSLog(@"更新原记录");
+            if ([self updateRecord:record]) {
+                [self afterSaveRecord];
+            }
         }
-    }else if (self.operationStatus == updateRecord){
-        //更新
-        
+    }else{
+        NSLog(@"存储对象为空");
     }
-    
 }
 
 #pragma mark - 存储完成动作
@@ -346,11 +366,13 @@ static sqlite3 *db;
     //刷新表单
     self.listData = [self quaryAllRecord];
     [self.ListTable reloadData];
+    
+    [self isShowEmptyView];
 }
 
 - (UIView *)inputAccessoryView{
     
-    if (self.operationStatus == createRecord) {
+    if (self.operationStatus == createRecord || self.operationStatus == updateRecord) {
         return self.popAddView;
     }else{
         return nil;
@@ -374,10 +396,12 @@ static sqlite3 *db;
         //文字内容
         [self.recordMode setContent:content];
         //时间
-        long long timeStamp = [JerryTools getCurrentTimestamp];
-        NSNumber *longlongNumber = [NSNumber numberWithLongLong:timeStamp];
-        NSString *timeStampStr = [longlongNumber stringValue];
-        [self.recordMode setTimeStamp:timeStampStr];
+        if (self.operationStatus == createRecord) {
+            long long timeStamp = [JerryTools getCurrentTimestamp];
+            NSNumber *longlongNumber = [NSNumber numberWithLongLong:timeStamp];
+            NSString *timeStampStr = [longlongNumber stringValue];
+            [self.recordMode setTimeStamp:timeStampStr];
+        }
         
         return self.recordMode;
     }
@@ -425,10 +449,14 @@ static sqlite3 *db;
 //实现左滑删除功能需要实现
 -(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath{
     //删除数据
-    [self.listData removeObjectAtIndex:indexPath.row];
-    
-    //刷新UI
-    [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationLeft];
+    //数据库
+    RecordMode *record = [self.listData objectAtIndex:indexPath.row];
+    if ([self deleteById:record.recordId]) {
+        //数据集
+        [self.listData removeObjectAtIndex:indexPath.row];
+        //刷新UI
+        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationLeft];
+    }
 }
 
 //左滑出现的按钮显示文字
@@ -441,9 +469,49 @@ static sqlite3 *db;
     return YES;
 }
 
-//移动完成后的数据排序交换
+#pragma mark - 移动完成后的数据排序交换
 -(void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath{
-    [self.listData exchangeObjectAtIndex:sourceIndexPath.row withObjectAtIndex:destinationIndexPath.row];
+//    [self.listData exchangeObjectAtIndex:sourceIndexPath.row withObjectAtIndex:destinationIndexPath.row];
+    //目标位置对象
+//    RecordMode *sourceRecord = [self.listData objectAtIndex:sourceIndexPath.row];
+    //源对象
+    RecordMode *record = [self.listData objectAtIndex:sourceIndexPath.row];
+    
+    //得到一个分身
+    RecordMode *tempRecord = [[RecordMode alloc] init];
+    tempRecord.recordId = record.recordId;
+    tempRecord.timeStamp = record.timeStamp;
+    tempRecord.content = record.content;
+    tempRecord.type = record.type;
+    tempRecord.order = record.order;
+    tempRecord.pic = record.pic;
+    tempRecord.temp1 = record.temp1;
+    tempRecord.temp2 = record.temp2;
+    tempRecord.temp3 = record.temp3;
+    
+    //将原数据设置为空，一遍后续删除
+    record.recordId = @"";
+    [self.listData replaceObjectAtIndex:sourceIndexPath.row withObject:record];
+    
+    //插入
+    [self.listData insertObject:tempRecord atIndex:destinationIndexPath.row];
+    
+    //删除待删项
+    for (int i = 0; i < [self.listData count]; i++) {
+        RecordMode *currentRecord = [self.listData objectAtIndex:i];
+        if ([currentRecord.recordId isEqualToString:@""]) {
+            [self.listData removeObjectAtIndex:i];
+            break;
+        }
+    }
+    
+    //更新排序位置
+    for (int i = 0; i < [self.listData count]; i++) {
+        RecordMode *record = [self.listData objectAtIndex:i];
+        record.order = [NSString stringWithFormat:@"%d",i];
+        //更新数据库
+        [self updateRecord:record];
+    }
 }
 
 //-(NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -470,8 +538,18 @@ static sqlite3 *db;
     }
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    RecordMode *record = [self.listData objectAtIndex:indexPath.row];
+    self.recordMode = record;
+    
+    //操作状态设置为编辑
+    self.operationStatus = updateRecord;
+    
+    [self showEditInterface:self.recordMode];
+}
+
 //编辑状态下CELL行不缩进
--(BOOL)tableView:(UITableView *)tableView shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath *)indexPath{
+-(BOOL)tableView:(UITableView *)tableView shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath *)indexPat{
     return NO;
 }
 
@@ -508,7 +586,7 @@ static sqlite3 *db;
 //创建表
 - (BOOL)createTable{
     //1.准备sqlite语句
-    NSString *sqlite = [NSString stringWithFormat:@"create table if not exists '%@' ('%@' integer primary key autoincrement not null,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text)",TABLE_RECORD_NAME,TABLE_RECORD_COL_ID,TABLE_RECORD_COL_DATE,TABLE_RECORD_COL_CONTENT,TABLE_RECORD_COL_TYPE,TABLE_RECORD_COL_PIC,TABLE_RECORD_COL_TEMP1,TABLE_RECORD_COL_TEMP2,TABLE_RECORD_COL_TEMP3];
+    NSString *sqlite = [NSString stringWithFormat:@"create table if not exists '%@' ('%@' integer primary key autoincrement not null,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text,'%@' text)",TABLE_RECORD_NAME,TABLE_RECORD_COL_ID,TABLE_RECORD_COL_DATE,TABLE_RECORD_COL_CONTENT,TABLE_RECORD_COL_TYPE,TABLE_RECORD_COL_PIC,TABLE_RECORD_COL_ISFINISH,TABLE_RECORD_COL_ORDER,TABLE_RECORD_COL_TEMP1,TABLE_RECORD_COL_TEMP2,TABLE_RECORD_COL_TEMP3];
     
     //2.执行sqlite语句
     char *error = NULL;//执行sqlite语句失败的时候,会把失败的原因存储到里面
@@ -525,8 +603,16 @@ static sqlite3 *db;
 
 //插入数据
 - (BOOL)addRecord:(RecordMode *) record{
+    
+    NSString *orderStr = @"1";
+    //排序值
+    if ([self.listData count] > 0) {
+        NSUInteger orderCount = [self.listData count] + 1;
+        orderStr = [NSString stringWithFormat:@"%ld",orderCount];
+    }
+    
     //1.准备sqlite语句
-    NSString *sqlite = [NSString stringWithFormat:@"insert into %@ (%@,%@,%@,%@,%@,%@,%@,%@) values (%@,'%@','%@','%@','%@','%@','%@','%@')",TABLE_RECORD_NAME,TABLE_RECORD_COL_ID,TABLE_RECORD_COL_DATE,TABLE_RECORD_COL_CONTENT,TABLE_RECORD_COL_TYPE,TABLE_RECORD_COL_PIC,TABLE_RECORD_COL_TEMP1,TABLE_RECORD_COL_TEMP2,TABLE_RECORD_COL_TEMP3,nil,record.timeStamp,record.content,record.type,record.pic,record.temp1,record.temp2,record.temp3];
+    NSString *sqlite = [NSString stringWithFormat:@"insert into %@ (%@,%@,%@,%@,%@,%@,%@,%@,%@,%@) values (%@,'%@','%@','%@','%@','%@','%@','%@','%@','%@')",TABLE_RECORD_NAME,TABLE_RECORD_COL_ID,TABLE_RECORD_COL_DATE,TABLE_RECORD_COL_CONTENT,TABLE_RECORD_COL_TYPE,TABLE_RECORD_COL_PIC,TABLE_RECORD_COL_ISFINISH,TABLE_RECORD_COL_ORDER,TABLE_RECORD_COL_TEMP1,TABLE_RECORD_COL_TEMP2,TABLE_RECORD_COL_TEMP3,nil,record.timeStamp,record.content,record.type,record.pic,record_status_not_finish,orderStr,record.temp1,record.temp2,record.temp3];
     
     //2.执行sqlite语句
     char *error = NULL;//执行sqlite语句失败的时候,会把失败的原因存储到里面
@@ -542,26 +628,45 @@ static sqlite3 *db;
 }
 
 //删除数据
-- (void)deleteById:(NSString *) recordId{
+- (BOOL)deleteById:(NSString *) recordId{
     //1.准备sqlite语句
-    NSString *sqlite = [NSString stringWithFormat:@"delete from record where recordId = '%@'",recordId];
+    NSString *sqlite = [NSString stringWithFormat:@"delete from %@ where recordId = '%@'",TABLE_RECORD_NAME,recordId];
     //2.执行sqlite语句
     char *error = NULL;//执行sqlite语句失败的时候,会把失败的原因存储到里面
     int result = sqlite3_exec(db, [sqlite UTF8String], nil, nil, &error);
     if (result == SQLITE_OK) {
         NSLog(@"删除数据成功");
+        return YES;
     } else {
         NSLog(@"删除数据失败%s",error);
+        return NO;
     }
 }
 
 //修改
+- (BOOL)updateRecord:(RecordMode *) recordMode{
+    
+    NSString *sqlite = [NSString stringWithFormat:@"update %@ set %@='%@',%@='%@',%@='%@' where %@='%@'",TABLE_RECORD_NAME,TABLE_RECORD_COL_CONTENT,recordMode.content,TABLE_RECORD_COL_TYPE,recordMode.type,TABLE_RECORD_COL_ORDER,recordMode.order,TABLE_RECORD_COL_ID,recordMode.recordId];
+    
+    NSLog(@"update sql : %@",sqlite);
+    
+    char *error = NULL;
+    int result = sqlite3_exec(db, [sqlite UTF8String], nil, nil, &error);
+    
+    if (result == SQLITE_OK) {
+        NSLog(@"修改数据成功");
+        return YES;
+    } else {
+        NSLog(@"修改数据失败");
+        return NO;
+    }
+}
 
 //查询所有数据
 - (NSMutableArray*)quaryAllRecord {
     NSMutableArray *array = [[NSMutableArray alloc] init];
     //1.准备sqlite语句
-    NSString *sqlite = [NSString stringWithFormat:@"select * from %@",TABLE_RECORD_NAME];
+    NSString *sqlite = [NSString stringWithFormat:@"select * from %@ order by %@",TABLE_RECORD_NAME,TABLE_RECORD_COL_ORDER];
     //2.伴随指针
     sqlite3_stmt *stmt = NULL;
     //3.预执行sqlite语句
@@ -579,7 +684,9 @@ static sqlite3 *db;
             //从伴随指针获取数据,第2列
             NSString *content = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(stmt, 2)] ;
             NSString *type = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(stmt, 3)] ;
-            NSLog(@"recordId:%@,date:%@,content:%@,type:%@",recordId,date,content,type);
+            NSString *order = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(stmt,6)] ;
+            
+            NSLog(@"recordId:%@,date:%@,content:%@,type:%@,order:%@",recordId,date,content,type,order);
             
             //封装记录对象
             RecordMode *recordMode = [[RecordMode alloc] init];
@@ -587,11 +694,13 @@ static sqlite3 *db;
             [recordMode setTimeStamp:date];
             [recordMode setContent:content];
             [recordMode setType:type];
+            [recordMode setOrder:order];
             
             [array addObject:recordMode];
         }
     } else {
         NSLog(@"查询失败");
+        
     }
     //5.关闭伴随指针
     sqlite3_finalize(stmt);

@@ -17,6 +17,9 @@
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="#阅读#" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BiR-qM-Xin">
                     <rect key="frame" x="16" y="16" width="54.5" height="24"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="55" id="2Cr-Iz-lJr"/>
+                    </constraints>
                     <fontDescription key="fontDescription" name="PingFangHK-Light" family="PingFang HK" pointSize="17"/>
                     <color key="textColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>

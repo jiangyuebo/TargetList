@@ -10,6 +10,6 @@
 
 @implementation RecordMode
 
-@synthesize recordId,timeStamp,content,type,pic,temp1,temp2,temp3;
+@synthesize recordId,timeStamp,content,type,order,pic,temp1,temp2,temp3;
 
 @end

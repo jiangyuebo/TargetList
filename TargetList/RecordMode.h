@@ -19,6 +19,8 @@
 @property (strong,nonatomic) NSString *content;
 //类型
 @property (strong,nonatomic) NSString *type;
+//排序值
+@property (strong,nonatomic) NSString *order;
 //图片
 @property (strong,nonatomic) NSString *pic;
 //temp1

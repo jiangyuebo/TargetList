@@ -39,6 +39,10 @@
 #define record_type_name_other @"其他"
 #define record_type_code_other @"9"
 
+//是否已完成
+#define record_status_finish @"1"
+#define record_status_not_finish @"0"
+
 //数据库字段
 //记录表名
 #define TABLE_RECORD_NAME @"record"
@@ -52,10 +56,10 @@
 #define TABLE_RECORD_COL_TYPE @"type"
 //图片
 #define TABLE_RECORD_COL_PIC @"pic"
-//类型
-#define TABLE_RECORD_COL_TYPE @"type"
+//是否完成
+#define TABLE_RECORD_COL_ISFINISH @"isFinish"
 //排序
-#define TABLE_RECORD_COL_ORDER @"order"
+#define TABLE_RECORD_COL_ORDER @"sortnumber"
 //冗余字段
 #define TABLE_RECORD_COL_TEMP1 @"temp1"
 #define TABLE_RECORD_COL_TEMP2 @"temp2"
