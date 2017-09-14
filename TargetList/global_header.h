@@ -12,6 +12,8 @@
 #define SCREENHEIGHT [UIScreen mainScreen].bounds.size.height
 #define SCREENWIDTH [UIScreen mainScreen].bounds.size.width
 
+#define IOS_VERSION_7_OR_ABOVE (([[[UIDevice currentDevice] systemVersion] floatValue] >=7.0)? (YES):(NO))
+
 //popview弹出后距离顶部距离
 #define popview_top_margin 160
 //popview动画执行时间

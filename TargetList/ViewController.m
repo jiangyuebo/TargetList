@@ -12,8 +12,9 @@
 
 #import "RecordMode.h"
 #import "JerryTools.h"
-#import "JerryViewTools.h"
 #import "UIColor+NSString.h"
+
+#import "PopAddView.h"
 
 typedef NS_ENUM(NSUInteger,PopViewOperation){
     createRecord = 1,
@@ -23,7 +24,7 @@ typedef NS_ENUM(NSUInteger,PopViewOperation){
 //数据库
 static sqlite3 *db;
 
-@interface ViewController ()<UITableViewDelegate,UITableViewDataSource>
+@interface ViewController ()<UITableViewDelegate,UITableViewDataSource,UITextViewDelegate>
 
 @property (strong, nonatomic) IBOutlet UITextField *searchText;
 
@@ -43,11 +44,19 @@ static sqlite3 *db;
 @property (strong,nonatomic) NSMutableArray *listData;
 
 //新增界面
-@property (strong,nonatomic) UIView *popAddView;
+@property (strong,nonatomic) PopAddView *popAddView;
+//输入框初始值
+@property (nonatomic) CGFloat totalViewOriginHeight;
+//输入view初始frame
+@property (nonatomic) CGRect originFrame;
+//暂存高度
+@property (nonatomic) CGFloat tempHeight;
 //新增界面-类型显示
 @property (strong,nonatomic) UILabel *recordTypeLabel;
 //新增界面-输入框
-@property (strong,nonatomic) UITextField *recordField;
+@property (strong,nonatomic) UITextView *recordView;
+//编辑状态下高度初始值设置
+@property (nonatomic) BOOL editFrameSetting;
 //新增界面-类型选择
 @property (strong,nonatomic) UIScrollView *recordTypeSelectScrollView;
 //新增界面-类型名称
@@ -63,8 +72,9 @@ static sqlite3 *db;
 //类型选择暂存，记录上次用户选择的类型
 @property (strong,nonatomic) NSString *selectedTypeTemp;
 
-//唤起键盘临时输入框
-@property (strong,nonatomic) UITextField *tempField;
+//键盘高度(最高)
+@property (nonatomic) CGFloat topKeyBoardHeight;
+
 //输入遮罩
 @property (strong,nonatomic) UIView *maskView;
 
@@ -132,20 +142,27 @@ static sqlite3 *db;
 
 #pragma mark - 展现输入界面
 - (void)showEditInterface:(RecordMode *) recordMode{
+    
     //设置类型显示
     NSUInteger codeIndex = [self.typeCodeArray indexOfObject:recordMode.type];
     NSString *typeName = [self.typeNameArray objectAtIndex:codeIndex];
     self.recordTypeLabel.text = [NSString stringWithFormat:@"#%@#",typeName];
     
-    if (recordMode.content) {
-        self.recordField.text = recordMode.content;
+    if (self.operationStatus == updateRecord) {
+        //编辑模式
+        self.recordView.text = recordMode.content;
+        
+        [self textViewAdapter:self.recordView];
     }else{
-        self.recordField.text = @"";
+        self.recordView.text = @"";
     }
     
     [self showMaskView];
     
-    [self.tempField becomeFirstResponder];
+    self.popAddView.hidden = NO;
+    [self.view bringSubviewToFront:self.popAddView];
+    
+    [self.recordView becomeFirstResponder];
 }
 
 #pragma mark - 显示遮罩层
@@ -178,17 +195,27 @@ static sqlite3 *db;
 
 #pragma mark - 点击遮罩
 - (void)touchMask{
-    [self.recordField resignFirstResponder];
+    NSLog(@"touch mask...");
+    [self.recordView resignFirstResponder];
     //取消新增状态
     self.operationStatus = 0;
+    
     [self hideMaskView];
+    
+    //popAddView内总体view高度复位
+    self.popAddView.frame = self.originFrame;
+    
+    self.tempHeight = 0;
+    
+    self.popAddView.hidden = YES;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    //监听键盘弹出
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow) name:UIKeyboardWillShowNotification object:nil];
+    // 添加对键盘的监控
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     
     [self initData];
     
@@ -242,23 +269,30 @@ static sqlite3 *db;
 #pragma mark - 初始化新增记录界面
 - (void)initAddRecordView{
     //新增界面
-    self.popAddView = [JerryViewTools getViewByXibName:@"PopAddView"];
+    self.popAddView = [PopAddView popAddView];
+    self.popAddView.frame = CGRectMake(0, SCREENHEIGHT - 94, SCREENWIDTH, 94);
+    
+    //记录初始高度
+    self.originFrame = self.popAddView.frame;
+    self.tempHeight = 0;
+
     //类型显示字符
-    self.recordTypeLabel = [self.popAddView viewWithTag:1];
+    self.recordTypeLabel = self.popAddView.typeLabel;
     //输入框
-    self.recordField = [self.popAddView viewWithTag:2];
+    self.recordView = self.popAddView.recordTextView;
+    self.recordView.layoutManager.allowsNonContiguousLayout = NO;
+    //设置代理
+    self.recordView.delegate = self;
+    
     //类型选择
-    self.recordTypeSelectScrollView = [self.popAddView viewWithTag:3];
+    self.recordTypeSelectScrollView = self.popAddView.typeIconScrollView;
     //类型名称
     self.typeNameArray = [NSMutableArray array];
     //发送按钮
-    self.recordSendButton = [self.popAddView viewWithTag:4];
+    self.recordSendButton = self.popAddView.submitButton;
     //添加存储事件
     [self.recordSendButton addTarget:self action:@selector(saveRecord) forControlEvents:UIControlEventTouchUpInside];
     
-    //用来升起键盘的field
-    self.tempField = [[UITextField alloc] initWithFrame:CGRectMake(0, SCREENHEIGHT,10, 10)];
-    [self.view addSubview:self.tempField];
     //存储类型图片
     self.iconImageArray = [NSMutableArray array];
     //类型代码
@@ -330,6 +364,121 @@ static sqlite3 *db;
         
         [self.recordTypeSelectScrollView addSubview:iconImageView];
     }
+    
+    self.popAddView.hidden = YES;
+    [self.view addSubview:self.popAddView];
+}
+
+#pragma mark - 键盘将要弹出
+- (void)keyBoardWillShow:(NSNotification *) note {
+    NSLog(@"keyBoardWillShow ...");
+    // 获取用户信息
+    NSDictionary *userInfo = [NSDictionary dictionaryWithDictionary:note.userInfo];
+    // 获取键盘高度
+    CGRect keyBoardBounds  = [[userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    CGFloat keyBoardHeight = keyBoardBounds.size.height;
+    self.topKeyBoardHeight = keyBoardHeight;
+    // 获取键盘动画时间
+    CGFloat animationTime  = [[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue];
+    
+    // 定义好动作
+    void (^animation)(void) = ^void(void) {
+        self.popAddView.transform = CGAffineTransformMakeTranslation(0, - keyBoardHeight);
+    };
+    
+    if (animationTime > 0) {
+        [UIView animateWithDuration:animationTime animations:animation];
+    } else {
+        animation();
+    }
+}
+
+#pragma mark - 键盘将要收起
+- (void)keyBoardWillHide:(NSNotification *) note {
+    // 获取用户信息
+    NSDictionary *userInfo = [NSDictionary dictionaryWithDictionary:note.userInfo];
+    // 获取键盘动画时间
+    CGFloat animationTime  = [[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue];
+    
+    // 定义好动作
+    void (^animation)(void) = ^void(void) {
+        self.popAddView.transform = CGAffineTransformIdentity;
+    };
+    
+    if (animationTime > 0) {
+        [UIView animateWithDuration:animationTime animations:animation];
+    } else {
+        animation();
+    }
+}
+
+#pragma mark - textView Delegate
+- (void)textViewDidChange:(UITextView *)textView{
+    
+    [self textViewAdapter:textView];
+}
+
+- (void)textViewAdapter:(UITextView *)textView{
+    
+    if (self.popAddView.frame.origin.y < 60) {
+        return;
+    }
+    
+    CGFloat width = CGRectGetWidth(textView.frame);
+    CGFloat height = CGRectGetHeight(textView.frame);
+    
+    CGSize newSize = [textView sizeThatFits:CGSizeMake(width,MAXFLOAT)];
+    CGRect newFrame = textView.frame;
+    
+    if (newSize.height > 150) {
+        newFrame.size = CGSizeMake(fmax(width, newSize.width), 150);
+    }else{
+        newFrame.size = CGSizeMake(fmax(width, newSize.width), fmax(height, newSize.height));
+    }
+    textView.frame = newFrame;
+    
+    if (self.editFrameSetting) {
+        self.tempHeight = 39;
+        height = CGRectGetHeight(textView.frame);
+        self.editFrameSetting = NO;
+    }
+    
+    if (self.tempHeight == 0) {
+        //记录初始值
+        self.tempHeight = height;
+    }else{
+        float diff = height - self.tempHeight;
+        if (diff > 2) {
+            //有新增行，修改view高度
+            self.tempHeight = height;
+            
+            
+            
+//                    if (self.editFrameSetting){
+//                        diff = 150;
+//                        CGFloat newHeight = self.popAddView.frame.size.height + diff;
+//                        CGRect newTextViewFrame = CGRectMake(textView.frame.origin.x,
+//                                                             textView.frame.origin.y,
+//                                                             textView.frame.size.width, newHeight - 9 - 44);
+//                        textView.frame = newTextViewFrame;
+//                        self.editFrameSetting = NO;
+//                    }else{
+//                        CGFloat newHeight = self.popAddView.frame.size.height + diff;
+//                        CGRect newTextViewFrame = CGRectMake(textView.frame.origin.x,
+//                                                             textView.frame.origin.y,
+//                                                             textView.frame.size.width, newHeight - 9 - 44);
+//                        textView.frame = newTextViewFrame;
+//                    }
+            
+            self.popAddView.frame = CGRectMake(self.popAddView.frame.origin.x,
+                                                self.popAddView.frame.origin.y - diff,
+                                                self.popAddView.frame.size.width,
+                                                self.popAddView.frame.size.height + diff);
+    }
+}
+        
+    NSLog(@"y:%f  height : %f",self.popAddView.frame.origin.y,height);
+    
 }
 
 #pragma mark - 记录类型选择点击
@@ -379,21 +528,20 @@ static sqlite3 *db;
 
 - (UIView *)inputAccessoryView{
     
-    if (self.operationStatus == createRecord || self.operationStatus == updateRecord) {
-        return self.popAddView;
-    }else{
-        return nil;
-    }
-}
-
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-    [self.view endEditing:YES];
+//    if (self.operationStatus == createRecord || self.operationStatus == updateRecord) {
+//        
+//        [self.popAddView bringSubviewToFront:self.maskView];
+//        return self.popAddView;
+//    }else{
+//        return nil;
+//    }
+    return nil;
 }
 
 #pragma mark - 组织存储对象
 - (RecordMode *)packageRecordMode{
     //输入内容
-    NSString *content = self.recordField.text;
+    NSString *content = self.recordView.text;
     if ([JerryTools stringIsNull:content]) {
         //内容为空
         NSLog(@"内容为空");
@@ -417,10 +565,6 @@ static sqlite3 *db;
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-}
-
-- (void)keyboardWillShow{
-    [self.recordField becomeFirstResponder];
 }
 
 #pragma mark - TableView Delegate
@@ -478,7 +622,7 @@ static sqlite3 *db;
     return YES;
 }
 
-#pragma mark - 移动完成后的数据排序交换
+#pragma mark 移动完成后的数据排序交换
 -(void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath{
 //    [self.listData exchangeObjectAtIndex:sourceIndexPath.row withObjectAtIndex:destinationIndexPath.row];
     //目标位置对象
@@ -548,11 +692,14 @@ static sqlite3 *db;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
     RecordMode *record = [self.listData objectAtIndex:indexPath.row];
     self.recordMode = record;
     
     //操作状态设置为编辑
     self.operationStatus = updateRecord;
+    
+    self.editFrameSetting = YES;
     
     [self showEditInterface:self.recordMode];
 }

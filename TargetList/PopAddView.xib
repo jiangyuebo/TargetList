@@ -11,21 +11,18 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <view contentMode="scaleToFill" id="S7V-CX-I8W">
-            <rect key="frame" x="0.0" y="0.0" width="454" height="100"/>
+        <view contentMode="scaleToFill" id="S7V-CX-I8W" customClass="PopAddView">
+            <rect key="frame" x="0.0" y="0.0" width="454" height="92"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="#阅读#" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BiR-qM-Xin">
-                    <rect key="frame" x="16" y="16" width="54.5" height="24"/>
-                    <constraints>
-                        <constraint firstAttribute="width" constant="55" id="2Cr-Iz-lJr"/>
-                    </constraints>
+                    <rect key="frame" x="16" y="16" width="55" height="24"/>
                     <fontDescription key="fontDescription" name="PingFangHK-Light" family="PingFang HK" pointSize="17"/>
                     <color key="textColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RkW-wk-v58">
-                    <rect key="frame" x="0.0" y="56" width="454" height="44"/>
+                    <rect key="frame" x="0.0" y="48" width="454" height="44"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Y39-97-nII">
                             <rect key="frame" x="0.0" y="43" width="454" height="1"/>
@@ -43,6 +40,9 @@
                         </view>
                         <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="scaleToFill" alwaysBounceHorizontal="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lQB-yR-r2W">
                             <rect key="frame" x="0.0" y="1" width="410" height="42"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="42" id="WT4-g2-vCy"/>
+                            </constraints>
                         </scrollView>
                         <button opaque="NO" tag="4" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OIl-He-ERq">
                             <rect key="frame" x="398" y="1" width="56" height="42"/>
@@ -70,30 +70,37 @@
                         <constraint firstAttribute="trailing" secondItem="Y39-97-nII" secondAttribute="trailing" id="xg8-h1-iLB"/>
                     </constraints>
                 </view>
-                <textField opaque="NO" clipsSubviews="YES" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="看完东野圭吾的《解忧杂货铺》" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="paS-u6-AKA">
-                    <rect key="frame" x="79" y="8" width="367" height="40"/>
-                    <nil key="textColor"/>
-                    <fontDescription key="fontDescription" name="PingFangHK-Light" family="PingFang HK" pointSize="17"/>
-                    <textInputTraits key="textInputTraits"/>
-                </textField>
+                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="scaleToFill" text="到香港旅游" translatesAutoresizingMaskIntoConstraints="NO" id="6q8-Qt-iZf">
+                    <rect key="frame" x="80" y="9" width="363" height="39"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                </textView>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
             <constraints>
-                <constraint firstItem="paS-u6-AKA" firstAttribute="leading" secondItem="BiR-qM-Xin" secondAttribute="trailing" constant="8" id="7WN-58-f9o"/>
-                <constraint firstItem="BiR-qM-Xin" firstAttribute="leading" secondItem="S7V-CX-I8W" secondAttribute="leading" constant="16" id="83n-Ji-6mg"/>
-                <constraint firstAttribute="trailing" secondItem="paS-u6-AKA" secondAttribute="trailing" constant="8" id="Fcu-dg-p3R"/>
-                <constraint firstItem="RkW-wk-v58" firstAttribute="top" secondItem="paS-u6-AKA" secondAttribute="bottom" constant="8" id="P33-sp-RYB"/>
-                <constraint firstItem="BiR-qM-Xin" firstAttribute="top" secondItem="S7V-CX-I8W" secondAttribute="top" constant="16" id="XrH-dV-APe"/>
-                <constraint firstItem="paS-u6-AKA" firstAttribute="top" secondItem="S7V-CX-I8W" secondAttribute="top" constant="8" id="Y7M-WT-ghj"/>
-                <constraint firstAttribute="trailing" secondItem="RkW-wk-v58" secondAttribute="trailing" id="dzT-QL-qao"/>
-                <constraint firstItem="RkW-wk-v58" firstAttribute="leading" secondItem="S7V-CX-I8W" secondAttribute="leading" id="xLj-Iw-UWv"/>
-                <constraint firstItem="paS-u6-AKA" firstAttribute="centerY" secondItem="BiR-qM-Xin" secondAttribute="centerY" id="yi8-IT-rUZ"/>
+                <constraint firstAttribute="trailing" secondItem="6q8-Qt-iZf" secondAttribute="trailing" constant="11" id="3Q8-lo-qa4"/>
+                <constraint firstItem="6q8-Qt-iZf" firstAttribute="leading" secondItem="BiR-qM-Xin" secondAttribute="trailing" constant="8.5" id="7ve-9n-c5R"/>
+                <constraint firstItem="BiR-qM-Xin" firstAttribute="leading" secondItem="S7V-CX-I8W" secondAttribute="leading" constant="16" id="AWy-Pc-YFB"/>
+                <constraint firstAttribute="trailing" secondItem="RkW-wk-v58" secondAttribute="trailing" id="Dap-dd-WgB"/>
+                <constraint firstAttribute="bottom" secondItem="RkW-wk-v58" secondAttribute="bottom" id="XNB-6W-dyW"/>
+                <constraint firstItem="RkW-wk-v58" firstAttribute="top" secondItem="6q8-Qt-iZf" secondAttribute="bottom" id="Z9P-J1-vpT"/>
+                <constraint firstItem="BiR-qM-Xin" firstAttribute="top" secondItem="S7V-CX-I8W" secondAttribute="top" constant="16" id="oDw-LK-Ado"/>
+                <constraint firstItem="RkW-wk-v58" firstAttribute="leading" secondItem="S7V-CX-I8W" secondAttribute="leading" id="rZw-wD-eLf"/>
+                <constraint firstItem="6q8-Qt-iZf" firstAttribute="top" secondItem="S7V-CX-I8W" secondAttribute="top" constant="9" id="sLm-ra-U33"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <point key="canvasLocation" x="139" y="-375"/>
+            <connections>
+                <outlet property="recordTextView" destination="6q8-Qt-iZf" id="XUe-q3-18v"/>
+                <outlet property="submitButton" destination="OIl-He-ERq" id="wTJ-zg-RZ8"/>
+                <outlet property="typeIconScrollView" destination="lQB-yR-r2W" id="2Uy-23-POR"/>
+                <outlet property="typeLabel" destination="BiR-qM-Xin" id="xG5-qL-8uv"/>
+            </connections>
+            <point key="canvasLocation" x="139" y="-379"/>
         </view>
     </objects>
     <resources>
